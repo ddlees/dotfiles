@@ -20,10 +20,18 @@ Plug 'google/vim-searchindex'
 Plug 'google/vim-codefmt'
 Plug 'google/vim-maktaba'
 Plug 'google/vim-glaive'
+Plug 'morhetz/gruvbox'
 
 " Initialize plugin system
 call plug#end()
 call glaive#Install()
+
+" Enable gruvbox theme
+colorscheme gruvbox
+set termguicolors
+
+" Airline config
+let g:airline_powerline_fonts = 1
 
 " enable line numbers
 let NERDTreeShowLineNumbers=1
@@ -33,6 +41,7 @@ let mapleader = " "
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
 map <C-n> :NERDTreeToggle<CR>
+let NERDTreeShowHidden=1
 filetype plugin on
 
 augroup autoformat_settings
