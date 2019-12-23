@@ -62,13 +62,27 @@ fi
 
 export PATH=$($HOME/.pyenv/bin/pyenv root)/shims:$PATH
 
+# Setup g
+export GOPATH=$HOME/dev
+export GOROOT=$HOME/.go
+export PATH=$GOPATH/bin:$PATH
+! bin_exists "g" &&
+  echo -n "$fg_bold[blue]Installing g... \033[s" &&
+  (curl -sL https://raw.githubusercontent.com/ddlees/g/master/bin/g -o /usr/local/bin/g) &> /dev/null &&
+  chmod a+x /usr/local/bin/g &&
+  echo "\033[u$fg_bold[green]Done!$reset_color"
+
 # Setup golang
-(bin_exists "go" && export GOPATH=$HOME/dev) || echo "$fg_bold[yellow]warn:$reset_color golang binary is missing"
+latest_go_version="$(g list-all | tail -n 2 | sed 's/[[:space:]>]//g')"
+[[ $(g list) != *"$latest_go_version" ]] &&
+  echo -n "$fg_bold[blue]Installing golang v$latest_go_version... \033[s" &&
+  (g install latest) &> /dev/null &&
+  echo "\033[u$fg_bold[green]Done!$reset_color"
 
 # Setup n
 ! bin_exists "n" &&
   echo -n "$fg_bold[blue]Installing n... \033[s" &&
-  (curl -sL https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n) 2> /dev/null &&
+  (curl -sL https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n) &> /dev/null &&
   echo "\033[u$fg_bold[green]Done!$reset_color"
 
 export N_PREFIX=$HOME/.n &&
@@ -220,3 +234,5 @@ alias ohmyzsh="vim ~/.oh-my-zsh"
 alias vim="nvim"
 alias vi="nvim"
 alias ll="ls -al --color=auto"
+
+unalias g
