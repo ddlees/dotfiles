@@ -21,6 +21,7 @@ Plug 'google/vim-codefmt'
 Plug 'google/vim-maktaba'
 Plug 'google/vim-glaive'
 Plug 'morhetz/gruvbox'
+Plug 'airblade/vim-gitgutter'
 
 " Initialize plugin system
 call plug#end()
@@ -35,6 +36,9 @@ let g:airline_powerline_fonts = 1
 
 " enable line numbers
 let NERDTreeShowLineNumbers=1
+
+" reduce updatetime for git-gutter
+set updatetime = 100
 
 let g:rustfmt_autosave = 1
 let mapleader = " "
