@@ -74,7 +74,7 @@ export PATH=$GOPATH/bin:$PATH
 
 # Setup golang
 latest_go_version="$(g list-all | tail -n 2 | sed 's/[[:space:]>]//g')"
-[[ $(g list) != *"$latest_go_version" ]] &&
+[[ $(g list) != *"$latest_go_version"* ]] &&
   echo -n "$fg_bold[blue]Installing golang v$latest_go_version... \033[s" &&
   (g install latest) &> /dev/null &&
   echo "\033[u$fg_bold[green]Done!$reset_color"
@@ -236,3 +236,4 @@ alias vi="nvim"
 alias ll="ls -al --color=auto"
 
 unalias g
+bin_exists "plz" && source <(plz --completion_script)
