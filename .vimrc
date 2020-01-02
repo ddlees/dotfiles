@@ -12,7 +12,6 @@ Plug 'cespare/vim-toml'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'scrooloose/nerdtree'
-" Plug 'valloric/youcompleteme'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
@@ -24,6 +23,7 @@ Plug 'morhetz/gruvbox'
 Plug 'airblade/vim-gitgutter'
 Plug 'zxqfl/tabnine-vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'tjdevries/coc-zsh'
 
 " Initialize plugin system
 call plug#end()
@@ -64,10 +64,13 @@ let g:rustfmt_autosave = 1
 """"""""""""
 " nerdtree "
 """"""""""""
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
 let NERDTreeShowHidden=1
 filetype plugin on
+
+augroup nerdtree_settings
+  autocmd StdinReadPre * let s:std_in=1
+  autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
+augroup END
 
 """""""""""""""
 " vim-codefmt "
@@ -95,14 +98,31 @@ set nobackup
 set nowritebackup
 set cmdheight=2 " Better display for messages
 set shortmess+=c " don't give |ins-completion-menu| messages.
-set signcolumn=yes " Always show sign columns 
-autocmd CursorHold * silent call CocActionAsync('highlight') " Highlight symbol under cursor on CursorHold
+set signcolumn=yes " Always show sign columns
+let g:coc_global_extensions = ['coc-tsserver', 'coc-json', 'coc-html', 'coc-css', 'coc-tabnine', 'coc-rls', 'coc-sh']
+
+augroup coc_settings
+  autocmd CursorHold * silent call CocActionAsync('highlight') " Highlight symbol under cursor on CursorHold
+augroup END
+
+"""""""""""""
+" syntastic "
+"""""""""""""
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+let g:syntastic_vim_checkers = ['vint']
 
 """"""""""""""""""""""""""""""""""""""""""""""""
 """"""""""""""""" Key-bindings """""""""""""""""
 """"""""""""""""""""""""""""""""""""""""""""""""
 
-let mapleader = " "
+let mapleader = ' '
 
 """"""""""""
 " nerdtree "
