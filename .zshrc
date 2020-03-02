@@ -54,6 +54,24 @@ if [[ "$(uname 2> /dev/null)" == "Darwin" ]]; then
 
 fi
 
+! path_exists "$HOME/dev" &&
+  mkdir -p "$HOME/dev/src/github.com" &&
+  mkdir -p "$HOME/dev/src/github.ibm.com"
+
+# Setup tmux
+TMUX_SRC="$HOME/dev/src/github.com/tmux/tmux"
+! bin_exists "tmux" &&
+  echo -n "$fg_bold[blue]Installing tmux... \033[s" &&
+  (mkdir -p "$TMUX_SRC" &&
+  git clone --branch '3.0a' --single-branch https://github.com/tmux/tmux.git "$TMUX_SRC" &&
+  cd "$TMUX_SRC" &&
+  sh autogen.sh &&
+  ./configure &&
+  make &&
+  mv tmux /usr/local/bin/tmux &&
+  cd "$HOME") &> /dev/null &&
+  echo "\033[u$fg_bold[green]Done!$reset_color"
+
 # Setup pyenv
 ! path_exists "$HOME/.pyenv/bin/pyenv" &&
   echo -n "$fg_bold[blue]Installing pyenv... \033[s" &&
@@ -61,6 +79,11 @@ fi
   echo "\033[u$fg_bold[green]Done!$reset_color"
 
 export PATH=$($HOME/.pyenv/bin/pyenv root)/shims:$PATH
+
+# Setup rbenvy
+
+bin_exists "rbenv" &&
+  eval "$(rbenv init -)"
 
 # Setup g
 export GOPATH=$HOME/dev
@@ -95,11 +118,18 @@ export N_PREFIX=$HOME/.n &&
   (n -q lts &> /dev/null) &&
   echo "\033[u$fg_bold[green]Done!$reset_color"
 
+if [[ -e /usr/libexec/java_home ]]; then
+  export JAVA_HOME=`/usr/libexec/java_home`
+  export PATH="$JAVA_HOME/bin:$PATH"
+fi
+
+path_exists "$HOME/bin" && export PATH="$HOME/bin:$PATH"
+
+# If things are not where they should be...
+ZSHRC_DIR="$(dirname $(readlink -e ${(%):-%N}))"
+
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
-
-# If .oh-my-zsh isn't where it should be...
-ZSHRC_DIR="$(dirname $(readlink -e ${(%):-%N}))"
 ! path_exists $ZSH &&
   cd $ZSHRC_DIR &&
   git submodule update --remote --merge &&
@@ -236,4 +266,10 @@ alias vi="nvim"
 alias ll="ls -al --color=auto"
 
 unalias g
+unalias kaf
+bin_exists "kaf" && source <(kaf completion zsh)
 bin_exists "plz" && source <(plz --completion_script)
+bin_exists "skaffold" && source <(skaffold completion zsh)
+
+# added by travis gem
+[ -f /Users/ddleesus.ibm.com/.travis/travis.sh ] && source /Users/ddleesus.ibm.com/.travis/travis.sh

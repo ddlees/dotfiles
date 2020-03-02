@@ -1,3 +1,5 @@
+scriptencoding utf-8
+
 " vim-plug plugins
 call plug#begin('~/.vim/plugged')
 
@@ -12,6 +14,7 @@ Plug 'cespare/vim-toml'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
@@ -24,7 +27,9 @@ Plug 'airblade/vim-gitgutter'
 Plug 'zxqfl/tabnine-vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'tjdevries/coc-zsh'
-
+Plug 'bazelbuild/vim-bazel'
+Plug 'ervandew/eclim'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 " Initialize plugin system
 call plug#end()
 call glaive#Install()
@@ -51,6 +56,19 @@ augroup numbertoggle
   autocmd BufLeave,FocusLost,InsertEnter * set norelativenumber " Buffer loses focus: number
 augroup END
 
+" Folding
+set foldmethod=syntax
+augroup OpenAllFoldsOnFileOpen
+    autocmd!
+    autocmd BufRead * normal zR
+augroup END
+
+" mouse mode
+set mouse=a
+
+" set system clipboard as default
+set clipboard=unnamedplus
+
 """""""""""""""
 " vim-airline "
 """""""""""""""
@@ -71,6 +89,18 @@ augroup nerdtree_settings
   autocmd StdinReadPre * let s:std_in=1
   autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
 augroup END
+
+let g:NERDTreeIndicatorMapCustom = {}
+let g:NERDTreeIndicatorMapCustom.Modified  = '~'
+let g:NERDTreeIndicatorMapCustom.Staged    = '✚'
+let g:NERDTreeIndicatorMapCustom.Untracked = '?'
+let g:NERDTreeIndicatorMapCustom.Renamed   = '➜'
+let g:NERDTreeIndicatorMapCustom.Unmerged  = '═'
+let g:NERDTreeIndicatorMapCustom.Deleted   = '✖'
+let g:NERDTreeIndicatorMapCustom.Dirty     = '!'
+let g:NERDTreeIndicatorMapCustom.Clean     = ''
+let g:NERDTreeIndicatorMapCustom.Ignored   = ''
+let g:NERDTreeIndicatorMapCustom.Unknown   = '¿'
 
 """""""""""""""
 " vim-codefmt "
@@ -99,9 +129,11 @@ set nowritebackup
 set cmdheight=2 " Better display for messages
 set shortmess+=c " don't give |ins-completion-menu| messages.
 set signcolumn=yes " Always show sign columns
-let g:coc_global_extensions = ['coc-tsserver', 'coc-json', 'coc-html', 'coc-css', 'coc-tabnine', 'coc-rls', 'coc-sh']
+let g:coc_global_extensions = ['coc-tsserver', 'coc-json', 'coc-html', 'coc-css', 'coc-tabnine', 'coc-rls', 'coc-sh', 'coc-java']
 
 augroup coc_settings
+  autocmd FileType json syntax match Comment +\/\/.\+$+
+  au BufRead,BufNewFile *.build_defs set filetype=please.build
   autocmd CursorHold * silent call CocActionAsync('highlight') " Highlight symbol under cursor on CursorHold
 augroup END
 
@@ -117,6 +149,8 @@ let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
 let g:syntastic_vim_checkers = ['vint']
+let g:syntastic_java_checkers = ['checkstyle']
+let g:syntastic_java_checkstyle_classpath = $HOME.'/.vim/checkstyle-8.28-all.jar'
 
 """"""""""""""""""""""""""""""""""""""""""""""""
 """"""""""""""""" Key-bindings """""""""""""""""
