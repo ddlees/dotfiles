@@ -1,7 +1,16 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 autoload -U colors && colors
 
-# Utility functions
+unalias run-help
+autoload run-help
 
+# Utility functions
 bin_exists() {
   type "$1" > /dev/null
 }
@@ -10,24 +19,24 @@ path_exists() {
   [[ -d "$1" || -f "$1" ]]
 }
 
+# Setup development source paths
+if ! path_exists "$HOME/dev"; then
+  mkdir -p "$HOME/dev/src/github.com"
+  mkdir -p "$HOME/dev/src/github.ibm.com"
+fi
+
+# Setup nix package manager
+if ! bin_exists "nix-env"; then
+  sh <(curl https://nixos.org/nix/install) --no-daemon
+fi
+
+source ${ZDOTDIR}/settings/gnu/coreutils.zsh
+source ${ZDOTDIR}/settings/mac/homebrew.zsh
+source ${ZDOTDIR}/settings/gnu/tar.zsh
+source ${ZDOTDIR}/settings/manpath.zsh
+
 # Mac OS setup
 if [[ "$(uname 2> /dev/null)" == "Darwin" ]]; then
-
-  # Setup Iterm2 shell integration
-  if ! path_exists "$HOME/.iterm2_shell_integration.zsh"; then
-    echo -n "$fg_bold[blue]Downloading iterm2 shell integration... \033[s" &&
-      (curl -sL https://iterm2.com/shell_integration/zsh -o ~/.iterm2_shell_integration.zsh > /dev/null) &&
-      echo "\033[u$fg_bold[green]Done!$reset_color"
-  fi
-
-  source "$HOME/.iterm2_shell_integration.zsh"
-
-  # Setup Homebrew
-  [[ "$(uname 2> /dev/null)" == "Darwin" ]] &&
-    ! bin_exists "brew" &&
-    echo -n "$fg_bold[blue]Installing homebrew... \033[s" &&
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" 2> /dev/null &&
-    echo "\033[u$fg_bold[green]Done!$reset_color"
 
   # Setup standard GNU utils
   OPT="/usr/local/opt"
@@ -41,22 +50,8 @@ if [[ "$(uname 2> /dev/null)" == "Darwin" ]]; then
     echo "\033[u$fg_bold[green]Done!$reset_color"
 
   export PATH=$FIND_UTILS$GNU_BIN:$PATH
-  export MANPATH=$FIND_UTILS$GNU_MAN:$MANPATH
-
-  CORE_UTILS="$OPT/coreutils"
-  ! path_exists $CORE_UTILS &&
-    echo -n "$fg_bold[blue]Installing GNU coreutils... \033[s" &&
-    (brew install coreutils) &> /dev/null &&
-    echo "\033[u$fg_bold[green]Done!$reset_color"
-
-  export PATH=$CORE_UTILS$GNU_BIN:$PATH
-  export MANPATH=$CORE_UTILS$GNU_MAN:$MANPATH
-
 fi
 
-! path_exists "$HOME/dev" &&
-  mkdir -p "$HOME/dev/src/github.com" &&
-  mkdir -p "$HOME/dev/src/github.ibm.com"
 
 # Setup tmux
 TMUX_SRC="$HOME/dev/src/github.com/tmux/tmux"
@@ -72,13 +67,19 @@ TMUX_SRC="$HOME/dev/src/github.com/tmux/tmux"
   cd "$HOME") &> /dev/null &&
   echo "\033[u$fg_bold[green]Done!$reset_color"
 
+TMUX_CONF=$HOME/.tmux
+! path_exists $TMUX_CONF &&
+  cd $ZDOTDIR &&
+  git submodule update --remote --merge &&
+  cd $HOME &&
+  ln -s $ZDOTDIR/.tmux &&
+  ln -s $ZDOTDIR/.tmux.conf
+
 # Setup pyenv
 ! path_exists "$HOME/.pyenv/bin/pyenv" &&
   echo -n "$fg_bold[blue]Installing pyenv... \033[s" &&
   (curl -s https://pyenv.run | bash 2> /dev/null) &&
-  echo "\033[u$fg_bold[green]Done!$reset_color"
-
-export PATH=$($HOME/.pyenv/bin/pyenv root)/shims:$PATH
+  echo "\033[u$fg_bold[green]Done!$reset_color" &&
 
 # Setup rbenvy
 
@@ -86,9 +87,6 @@ bin_exists "rbenv" &&
   eval "$(rbenv init -)"
 
 # Setup g
-export GOPATH=$HOME/dev
-export GOROOT=$HOME/.go
-export PATH=$GOPATH/bin:$PATH
 ! bin_exists "g" &&
   echo -n "$fg_bold[blue]Installing g... \033[s" &&
   (curl -sL https://raw.githubusercontent.com/ddlees/g/master/bin/g -o /usr/local/bin/g) &> /dev/null &&
@@ -102,15 +100,18 @@ latest_go_version="$(g list-all | tail -n 2 | sed 's/[[:space:]>]//g')"
   (g install latest) &> /dev/null &&
   echo "\033[u$fg_bold[green]Done!$reset_color"
 
+! bin_exists "bazelisk" &&
+  echo -n "$fg_bold[blue]Installing bazelisk... \033[s" &&
+  (go get github.com/bazelbuild/bazelisk) &> /dev/null &&
+  ln -s
+  echo "\033[u$fg_bold[green]Done!$reset_color"
+
 # Setup n
 ! bin_exists "n" &&
   echo -n "$fg_bold[blue]Installing n... \033[s" &&
   (curl -sL https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n) &> /dev/null &&
   echo "\033[u$fg_bold[green]Done!$reset_color"
 
-export N_PREFIX=$HOME/.n &&
-  export PATH=$N_PREFIX/bin:$PATH &&
-  export N_USE_XZ=true
 
 # Install latest Node LTS
 [[ $(n ls) != *"$(n --lts)"* ]] &&
@@ -118,31 +119,19 @@ export N_PREFIX=$HOME/.n &&
   (n -q lts &> /dev/null) &&
   echo "\033[u$fg_bold[green]Done!$reset_color"
 
-if [[ -e /usr/libexec/java_home ]]; then
-  export JAVA_HOME=`/usr/libexec/java_home`
-  export PATH="$JAVA_HOME/bin:$PATH"
-fi
 
-path_exists "$HOME/bin" && export PATH="$HOME/bin:$PATH"
 
 # If things are not where they should be...
-ZSHRC_DIR="$(dirname $(readlink -e ${(%):-%N}))"
 
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 ! path_exists $ZSH &&
-  cd $ZSHRC_DIR &&
+  cd $ZDOTDIR &&
   git submodule update --remote --merge &&
   ln -frs plugins/* .oh-my-zsh/custom/plugins/ &&
   ln -frs themes/* .oh-my-zsh/custom/themes &&
   cd $HOME &&
-  ln -s $ZSHRC_DIR/.oh-my-zsh
-
-# Set name of the theme to load --- if set to "random", it will
-# load a random theme each time oh-my-zsh is loaded, in which case,
-# to know which specific one was loaded, run: echo $RANDOM_THEME
-# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="mylambda"
+  ln -s $ZDOTDIR/.oh-my-zsh
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -230,25 +219,35 @@ plugins=(
   sbt
   scala
   vault
+  vi-mode
   vscode
   xcode
+  zsh-autosuggestions
   zsh-completions
+  fast-syntax-highlighting
 )
 
 source $ZSH/oh-my-zsh.sh
 autoload -U compinit && compinit
 
 # User configuration
-
+ZSH_TMUX_AUTOSTART="true"
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
-# Preferred editor for local and remote sessions
-if [[ -n $SSH_CONNECTION ]]; then
-  export EDITOR='vim'
-else
-  export EDITOR='nvim'
-fi
+###
+# Zsh Autosuggestions
+#
+# https://github.com/zsh-users/zsh-autosuggestions
+###
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=8,bold"
+export ZSH_AUTOSUGGEST_USE_ASYNC='true'
+# Ctrl + f: Accepts a word.
+bindkey '^f' forward-word
+# Ctrl + SPACE: Accepts the full suggestion.
+bindkey '^ ' autosuggest-accept
+export ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+# export ZSH_AUTOSUGGEST_STRATEGY=(match_prev_cmd completion)
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
@@ -273,3 +272,120 @@ bin_exists "skaffold" && source <(skaffold completion zsh)
 
 # added by travis gem
 [ -f /Users/ddleesus.ibm.com/.travis/travis.sh ] && source /Users/ddleesus.ibm.com/.travis/travis.sh
+
+# Set Configuration if it's not been set already.
+[[ -z "$KUBECONFIG" ]] && export KUBECONFIG="$HOME/.kube/config"
+
+# Add each IBM Cloud configuration.
+IBM_KUBECONFIGS=$(find "$HOME/.bluemix/plugins/container-service/clusters" -name '*.yml')
+while read -r IBM_KUBECONFIG; do
+[[ ":$KUBECONFIG:" != *":$IBM_KUBECONFIG:"* ]] && export KUBECONFIG="$KUBECONFIG:$IBM_KUBECONFIG"
+done <<< "$IBM_KUBECONFIGS"
+
+# Fuzzy Finder Configuration
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+if type "fzf" > /dev/null; then
+  # Use tmux.
+  export FZF_TMUX=1
+  # Default to The Silver Searcher.
+  if type "ag" > /dev/null; then
+    export FZF_DEFAULT_COMMAND='ag --color --color-path "00;22" --filename-pattern ""'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND"
+  elif type "rg" > /dev/null; then
+    export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --glob "!.git/*" --glob "!.cache/*" --glob "!node_modules/*"'
+    # export FZF_DEFAULT_COMMAND='rg --no-ignore --hidden --glob "!.git/*" --glob "!.cache/*" --glob "!node_modules/*"'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND"
+  fi
+  # Setup default options.
+  function fzf_default_options () {
+    # Bat options
+    bat_options=('--color always'
+                 '--italic-text always'
+                 '--style numbers,header,changes,grid'
+                 '--paging never'
+                 '--line-range :$LINES'
+                 '--theme \"One Dark\"'
+    )
+    # Fzf preview options.
+    fzf_preview_options=('"[[ $(file --mime {}) =~ binary ]]'
+                         '&& echo {} is a binary file'
+                         "|| (bat {} $bat_options || cat {})"
+                         '2> /dev/null"'
+    )
+    # Fzf color options - 'one' theme.
+    fzf_color_options=('--color dark'
+                       '--color fg:-1'
+                       '--color bg:-1'
+                       '--color hl:#c678dd'
+                       '--color fg+:#ffffff'
+                       '--color bg+:-1'
+                       '--color hl+:#d858fe'
+                       '--color info:#98c379'
+                       '--color border:#282c34'
+                       # '--color border:-1'
+                       '--color prompt:#61afef'
+                       '--color pointer:#be5046'
+                       '--color marker:#e5c07b'
+                       '--color spinner:#61afef'
+                       '--color header:#61afef'
+    )
+    # Vim keybinding.
+    # Couldn't get this working.
+    fzf_vim_bindings=('"ctrl-v:execute(vim {} < /dev/tty)"')
+    # Fzf options
+    fzf_options=(
+      '--reverse'
+      # '--inline-info'
+      '--ansi'
+      '--preview-window right:0%'
+      "--preview $fzf_preview_options"
+      # "--bind $fzf_vim_bindings"
+      "$fzf_color_options"
+    )
+    echo -n "$fzf_options"
+  }
+  export FZF_DEFAULT_OPTS=$(fzf_default_options)
+  export FZF_CTRL_T_OPTS='--preview-window right:70%'
+  export FZF_CTRL_R_OPTS='--preview-window right:0%'
+fi
+
+if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
+  . /Users/ddleesus.ibm.com/.nix-profile/etc/profile.d/nix.sh;
+fi
+
+if [[ -e $ZDOTDIR/themes/powerlevel10k/powerlevel10k.zsh-theme ]]; then
+  . $ZDOTDIR/themes/powerlevel10k/powerlevel10k.zsh-theme
+fi
+
+##
+# AWS CLI Configuration
+##
+if type "aws" > /dev/null; then
+  function _aws () {
+    local options="${@}"
+    local aws_options=()
+    # If `CLOUD_OBJECT_STORAGE_ENDPOINT` is defined then use it as the S3
+    # endpoint.
+    [ ! -z "${CLOUD_OBJECT_STORAGE_ENDPOINT}" ] \
+      && aws_options+=( '--endpoint-url' "${CLOUD_OBJECT_STORAGE_ENDPOINT}")
+    # Replace `cos://` with `s3://`.
+    local search='cos://'
+    local replace='s3://'
+    options="${options/"${search}"/"${replace}"}"
+    # Remove `us-south/` if it's present.
+    local search='://us-south/'
+    local replace='://'
+    options="${options/"${search}"/"${replace}"}"
+    aws_options+=( "${options}" )
+    aws ${=aws_options}
+  }
+  alias aws="_aws"
+  alias s3="aws s3"
+fi
+
+alias icat="kitty +kitten icat"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

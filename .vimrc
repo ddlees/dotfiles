@@ -4,7 +4,6 @@ scriptencoding utf-8
 call plug#begin('~/.vim/plugged')
 
 Plug 'rust-lang/rust.vim'
-Plug 'scrooloose/syntastic'
 Plug 'leafgarland/typescript-vim'
 Plug 'plasticboy/vim-markdown'
 Plug 'majutsushi/tagbar'
@@ -24,12 +23,16 @@ Plug 'google/vim-maktaba'
 Plug 'google/vim-glaive'
 Plug 'morhetz/gruvbox'
 Plug 'airblade/vim-gitgutter'
-Plug 'zxqfl/tabnine-vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'tjdevries/coc-zsh'
 Plug 'bazelbuild/vim-bazel'
 Plug 'ervandew/eclim'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf'
+Plug 'christoomey/vim-tmux-navigator'
+Plug 'tpope/vim-classpath'
+Plug 'tpope/vim-surround'
+Plug 'whatyouhide/vim-lengthmatters'
+
 " Initialize plugin system
 call plug#end()
 call glaive#Install()
@@ -56,18 +59,17 @@ augroup numbertoggle
   autocmd BufLeave,FocusLost,InsertEnter * set norelativenumber " Buffer loses focus: number
 augroup END
 
-" Folding
-set foldmethod=syntax
-augroup OpenAllFoldsOnFileOpen
-    autocmd!
-    autocmd BufRead * normal zR
-augroup END
-
 " mouse mode
 set mouse=a
 
 " set system clipboard as default
 set clipboard=unnamedplus
+
+" Disable folding
+set nofoldenable
+
+" Spaces instead of tabs
+set expandtab
 
 """""""""""""""
 " vim-airline "
@@ -87,7 +89,8 @@ filetype plugin on
 
 augroup nerdtree_settings
   autocmd StdinReadPre * let s:std_in=1
-  autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
+  autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") |
+    \ exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
 augroup END
 
 let g:NERDTreeIndicatorMapCustom = {}
@@ -129,28 +132,31 @@ set nowritebackup
 set cmdheight=2 " Better display for messages
 set shortmess+=c " don't give |ins-completion-menu| messages.
 set signcolumn=yes " Always show sign columns
-let g:coc_global_extensions = ['coc-tsserver', 'coc-json', 'coc-html', 'coc-css', 'coc-tabnine', 'coc-rls', 'coc-sh', 'coc-java']
+let g:coc_global_extensions = [
+  \ 'coc-tsserver',
+  \ 'coc-json',
+  \ 'coc-html',
+  \ 'coc-css',
+  \ 'coc-rls',
+  \ 'coc-sh',
+  \ 'coc-java',
+  \ 'coc-marketplace',
+  \ 'coc-sql',
+  \ 'coc-python',
+  \ 'coc-tabnine'
+\]
 
 augroup coc_settings
   autocmd FileType json syntax match Comment +\/\/.\+$+
   au BufRead,BufNewFile *.build_defs set filetype=please.build
-  autocmd CursorHold * silent call CocActionAsync('highlight') " Highlight symbol under cursor on CursorHold
+  " Highlight symbol under cursor on CursorHold
+  autocmd CursorHold * silent call CocActionAsync('highlight')
 augroup END
 
-"""""""""""""
-" syntastic "
-"""""""""""""
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
-let g:syntastic_vim_checkers = ['vint']
-let g:syntastic_java_checkers = ['checkstyle']
-let g:syntastic_java_checkstyle_classpath = $HOME.'/.vim/checkstyle-8.28-all.jar'
+"""""""""""""""""""""
+" vim-Lengthmatters "
+"""""""""""""""""""""
+set textwidth=120
 
 """"""""""""""""""""""""""""""""""""""""""""""""
 """"""""""""""""" Key-bindings """""""""""""""""
@@ -164,54 +170,14 @@ let mapleader = ' '
 map <C-n> :NERDTreeToggle<CR>
 
 """"""""""""
+" FZF "
+""""""""""""
+map <C-f> :FZF<CR>
+
+""""""""""""
 " coc.nvim "
 """"""""""""
 
-" Use tab for trigger completion with characters ahead and navigate.
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ coc#refresh()
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
-
-" Use <c-space> to trigger completion.
-inoremap <silent><expr> <c-space> coc#refresh()
-
-" Use <cr> to confirm completion, `<C-g>u` means break undo chain at current position.
-" Coc only does snippet and additional edit on confirm.
-inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
-
-" Use `[g` and `]g` to navigate diagnostics
-nmap <silent> [g <Plug>(coc-diagnostic-prev)
-nmap <silent> ]g <Plug>(coc-diagnostic-next)
-
-" Remap keys for gotos
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
-
-" Use K to show documentation in preview window
-nnoremap <silent> K :call <SID>show_documentation()<CR>
-
-function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
-endfunction
-
-" Remap for rename current word
-nmap <leader>rn <Plug>(coc-rename)
-
-" Remap for format selected region
-xmap <leader>f  <Plug>(coc-format-selected)
 nmap <leader>f  <Plug>(coc-format-selected)
 
 " Remap for do codeAction of selected region, ex: `<leader>aap` for current paragraph
@@ -234,3 +200,8 @@ omap af <Plug>(coc-funcobj-a)
 nmap <silent> <TAB> <Plug>(coc-range-select)
 xmap <silent> <TAB> <Plug>(coc-range-select)
 
+" GoTo code navigation.
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
