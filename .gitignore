@@ -1,2 +1,6 @@
 .zcompdump
 *.log
+
+# tmux
+.config/tmux/plugins
+!.config/tmux/plugins/tpm
