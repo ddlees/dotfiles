@@ -2,5 +2,5 @@
 *.log
 
 # tmux
-.config/tmux/plugins
+.config/tmux
 !.config/tmux/plugins/tpm
