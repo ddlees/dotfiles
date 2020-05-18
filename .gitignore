@@ -1,6 +1,7 @@
-.zcompdump
+.zcompdump*
 *.log
 
-# tmux
-.config/tmux
-!.config/tmux/plugins/tpm
+# .config folder
+/.config/*
+!/.config/tmux/plugins/tpm
+!/.config/git/config
