@@ -2,6 +2,7 @@
 *.log
 
 # .config folder
-.config
+.config/*
 !.config/tmux/plugins/tpm
-!.config/git/config
+!.config/git
+!.config/fzf
