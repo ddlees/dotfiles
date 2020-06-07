@@ -1,9 +1,6 @@
 [submodule ".oh-my-zsh"]
 	path = .oh-my-zsh
 	url = https://github.com/ohmyzsh/ohmyzsh.git
-[submodule "plugins/yarn-completion"]
-	path = .config/zsh/plugins/yarn-completion
-	url = https://github.com/buonomo/yarn-completion
 [submodule ".config/tmux/plugins/tpm"]
 	path = .config/tmux/plugins/tpm
 	url = https://github.com/tmux-plugins/tpm
