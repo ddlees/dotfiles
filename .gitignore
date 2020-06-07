@@ -3,13 +3,16 @@
 
 # .config folder
 .config/*
-!.config/tmux/tmux.conf
-!.config/tmux/plugins/tpm
-!.config/git
+!.config/bash
 !.config/fzf
-!.config/zsh
-!.config/p10k
-!.config/vim/.vimrc
-!.config/nvim
+!.config/git
 !.config/kitty
+!.config/nvim
+!.config/p10k
+!.config/tmux/plugins/tpm
+!.config/tmux/tmux.conf
+!.config/vim/.vimrc
+!.config/zsh
+.config/zsh/.zinit
 
+.DS_Store

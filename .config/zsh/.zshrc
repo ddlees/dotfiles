@@ -1,16 +1,30 @@
-zmodload zsh/zprof
+# Ensure at least zinit submodule has been pulled
+if ! [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/plugins/zinit/zinit.zsh" ]]; then
+  command git -C "$GIT_DOTFILES" submodule update --init --recursive --jobs 8
+fi
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of .zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
+# Enable Powerlevel10k instant prompt. Should stay near the top of ~/.zshrc.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# To customize prompt, run `p10k configure` or edit .p10k.zsh.
-if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh" ]]; then
-  source "${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh"
-fi
+
+source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/plugins/zinit/zinit.zsh"
+
+zinit wait lucid for \
+  atload'_zsh_autosuggest_start' \
+      zsh-users/zsh-autosuggestions \
+  atinit"zicompinit; zicdreplay" \
+      zdharma/fast-syntax-highlighting \
+  blockf atpull'zinit creinstall -q .' \
+      zinit light zsh-users/zsh-completions \
+  atclone"dircolors -b LS_COLORS > clrs.zsh" \
+  atpull'%atclone' pick"clrs.zsh" nocompile'!' \
+  atload'zstyle ":completion:*" list-colors “${(s.:.)LS_COLORS}”' \
+    trapd00r/LS_COLORS
+
+zinit atload'!source ${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh' lucid nocd for \
+    romkatv/powerlevel10k
 
 autoload -U colors && colors
 
@@ -86,7 +100,7 @@ TMUX_CONF=$HOME/.tmux
 # ! path_exists "$HOME/.pyenv/bin/pyenv" &&
 #   echo -n "$fg_bold[blue]Installing pyenv... \033[s" &&
 #   (curl -s https://pyenv.run | bash 2> /dev/null) &&
-#   echo "\033[u$fg_bold[green]Done!$reset_color" &&
+#   echo "\033[u$fg_bold[green]Done!$reset_color"
 
 # Setup rbenvy
 
@@ -206,9 +220,6 @@ plugins=(
   kube-ps1-patch
   pyenv
   vi-mode
-  zsh-autosuggestions
-  zsh-completions
-  fast-syntax-highlighting
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -247,6 +258,7 @@ alias ohmyzsh="vim ~/.oh-my-zsh"
 alias vim="nvim"
 alias vi="nvim"
 alias ll="ls -al --color=auto"
+alias ls="ls --color=auto"
 
 unalias g
 bin_exists "kaf" && source <(kaf completion zsh)
@@ -256,14 +268,6 @@ bin_exists "plz" && source <(plz --completion_script)
 # added by travis gem
 # [ -f /Users/ddleesus.ibm.com/.travis/travis.sh ] && source /Users/ddleesus.ibm.com/.travis/travis.sh
 
-# Set Configuration if it's not been set already.
-[[ -z "$KUBECONFIG" ]] && export KUBECONFIG="$HOME/.kube/config"
-
-# Add each IBM Cloud configuration.
-IBM_KUBECONFIGS=$(find "$HOME/.bluemix/plugins/container-service/clusters" -name '*.yml')
-while read -r IBM_KUBECONFIG; do
-[[ ":$KUBECONFIG:" != *":$IBM_KUBECONFIG:"* ]] && export KUBECONFIG="$KUBECONFIG:$IBM_KUBECONFIG"
-done <<< "$IBM_KUBECONFIGS"
 
 # Fuzzy Finder Configuration
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
@@ -341,10 +345,6 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
   . /Users/ddleesus.ibm.com/.nix-profile/etc/profile.d/nix.sh;
 fi
 
-if [[ -e $ZDOTDIR/themes/powerlevel10k/powerlevel10k.zsh-theme ]]; then
-  . $ZDOTDIR/themes/powerlevel10k/powerlevel10k.zsh-theme
-fi
-
 ##
 # AWS CLI Configuration
 ##
@@ -373,5 +373,7 @@ fi
 
 alias icat="kitty +kitten icat"
 
-source /usr/local/opt/modules/init/zsh
-
+# To customize prompt, run `p10k configure` or edit .p10k.zsh.
+if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh" ]]; then
+  source "${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh"
+fi

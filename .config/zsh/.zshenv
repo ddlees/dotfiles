@@ -1,38 +1,36 @@
+################################################################################
+#                         XDG Base Directory Spec values                       #
+################################################################################
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_CONFIG_DIRS="/etc/xdg"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_DATA_DIRS="/usr/local/share:/usr/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
-##
-# Editor Configuration
-#
-# Preference order:
-# nvim -> vim -> vi.
-##
-if type 'nvim' > /dev/null; then
+################################################################################
+#                              Editor Configuration                            #
+################################################################################
+if command -v 'nvim' > /dev/null 2>&1; then
   export EDITOR='nvim'
-elif type 'vim' > /dev/null; then
+elif command -v 'vim' > /dev/null 2>&1; then
   export EDITOR='vim'
 else
   export EDITOR='vi'
 fi
 
-###
-# PATH/MANPATH Precedence
-#
-# 1. ~/.local/bin
-# 2. ~/bin
-# 3. misc
-# 4. (yarn|npm|go|rust|etc)
-# 5. nix
-# 6. snap
-# 7. local
-###
-
-##
-# Package manager configuration
-##
+################################################################################
+#                            PATH/MANPATH Precedence                           #
+################################################################################
+#                                                                              #
+# 1. ~/.local/bin (highest)                                                    #
+# 2. ~/bin                                                                     #
+# 3. misc                                                                      #
+# 4. (yarn|npm|go|rust|etc)                                                    #
+# 5. nix                                                                       #
+# 6. snap                                                                      #
+# 7. local (lowest)                                                            #
+#                                                                              #
+################################################################################
 
 # local
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
@@ -44,9 +42,9 @@ export PATH="/snap/bin:${PATH}"
 # Nix
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
-##
-# Misc. binary configuration
-##
+##############
+# begin misc #
+##############
 
 # pyenv
 export PATH="$HOME/.pyenv/shims:$PATH"
@@ -80,9 +78,9 @@ fi
 # Rust
 export PATH="$HOME/.cargo/bin:$PATH"
 
-##
-# Self managed binary configuration
-##
+############
+# end misc #
+############
 
 # ~/bin
 export PATH="$HOME/bin:$PATH"
@@ -90,9 +88,9 @@ export PATH="$HOME/bin:$PATH"
 # ~/.local/bin
 export PATH="$HOME/.local/bin:$PATH"
 
-##
-# zsh variables
-##
+################################################################################
+#                                 zsh variables                                #
+################################################################################
 
 # Set ZDOTDIR following all resolved symlinks
 SOURCE="${(%):-%N}"
@@ -105,3 +103,17 @@ done
 export ZDOTDIR="$(cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd)"
 
 export ZSH_CACHE_DIR="$XDG_CACHE_HOME/zsh"
+
+################################################################################
+#                                misc. variables                               #
+################################################################################
+export GIT_DOTFILES="$(dirname $(dirname "$ZDOTDIR"))"
+
+# Set Configuration if it's not been set already.
+[[ -z "$KUBECONFIG" ]] && export KUBECONFIG="$HOME/.kube/config"
+
+# Add each IBM Cloud k8s configuration to KUBECONFIG
+IBM_KUBECONFIGS=$(find "$HOME/.bluemix/plugins/container-service/clusters" -name '*.yml')
+while read -r IBM_KUBECONFIG; do
+  [[ ":$KUBECONFIG:" != *":$IBM_KUBECONFIG:"* ]] && export KUBECONFIG="$KUBECONFIG:$IBM_KUBECONFIG"
+done <<< "$IBM_KUBECONFIGS"
