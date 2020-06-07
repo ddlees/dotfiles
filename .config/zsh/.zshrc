@@ -1,8 +1,15 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+zmodload zsh/zprof
+
+# Enable Powerlevel10k instant prompt. Should stay close to the top of .zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# To customize prompt, run `p10k configure` or edit .p10k.zsh.
+if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh" ]]; then
+  source "${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh"
 fi
 
 autoload -U colors && colors
@@ -26,14 +33,14 @@ if ! path_exists "$HOME/dev"; then
 fi
 
 # Setup nix package manager
-if ! bin_exists "nix-env"; then
-  sh <(curl https://nixos.org/nix/install) --no-daemon
-fi
+# if ! bin_exists "nix-env"; then
+#   sh <(curl https://nixos.org/nix/install) --no-daemon
+# fi
 
-source ${ZDOTDIR}/settings/gnu/coreutils.zsh
-source ${ZDOTDIR}/settings/mac/homebrew.zsh
-source ${ZDOTDIR}/settings/gnu/tar.zsh
-source ${ZDOTDIR}/settings/manpath.zsh
+# source ${ZDOTDIR}/settings/gnu/coreutils.zsh
+# source ${ZDOTDIR}/settings/mac/homebrew.zsh
+# source ${ZDOTDIR}/settings/gnu/tar.zsh
+# source ${ZDOTDIR}/settings/manpath.zsh
 
 # Mac OS setup
 if [[ "$(uname 2> /dev/null)" == "Darwin" ]]; then
@@ -44,42 +51,42 @@ if [[ "$(uname 2> /dev/null)" == "Darwin" ]]; then
   GNU_MAN="/libexec/gnuman"
 
   FIND_UTILS="$OPT/findutils"
-  ! path_exists $FIND_UTILS &&
-    echo -n "$fg_bold[blue]Installing GNU findutils... \033[s" &&
-    (brew install findutils) &> /dev/null &&
-    echo "\033[u$fg_bold[green]Done!$reset_color"
+  # ! path_exists $FIND_UTILS &&
+  #   echo -n "$fg_bold[blue]Installing GNU findutils... \033[s" &&
+  #   (brew install findutils) &> /dev/null &&
+  #   echo "\033[u$fg_bold[green]Done!$reset_color"
 
   export PATH=$FIND_UTILS$GNU_BIN:$PATH
 fi
 
 
 # Setup tmux
-TMUX_SRC="$HOME/dev/src/github.com/tmux/tmux"
-! bin_exists "tmux" &&
-  echo -n "$fg_bold[blue]Installing tmux... \033[s" &&
-  (mkdir -p "$TMUX_SRC" &&
-  git clone --branch '3.0a' --single-branch https://github.com/tmux/tmux.git "$TMUX_SRC" &&
-  cd "$TMUX_SRC" &&
-  sh autogen.sh &&
-  ./configure &&
-  make &&
-  mv tmux /usr/local/bin/tmux &&
-  cd "$HOME") &> /dev/null &&
-  echo "\033[u$fg_bold[green]Done!$reset_color"
+# TMUX_SRC="$HOME/dev/src/github.com/tmux/tmux"
+# ! bin_exists "tmux" &&
+#   echo -n "$fg_bold[blue]Installing tmux... \033[s" &&
+#   (mkdir -p "$TMUX_SRC" &&
+#   git clone --branch '3.0a' --single-branch https://github.com/tmux/tmux.git "$TMUX_SRC" &&
+#   cd "$TMUX_SRC" &&
+#   sh autogen.sh &&
+#   ./configure &&
+#   make &&
+#   mv tmux /usr/local/bin/tmux &&
+#   cd "$HOME") &> /dev/null &&
+#   echo "\033[u$fg_bold[green]Done!$reset_color"
 
 TMUX_CONF=$HOME/.tmux
-! path_exists $TMUX_CONF &&
-  cd $ZDOTDIR &&
-  git submodule update --remote --merge &&
-  cd $HOME &&
-  ln -s $ZDOTDIR/.tmux &&
-  ln -s $ZDOTDIR/.tmux.conf
+# ! path_exists $TMUX_CONF &&
+#   cd $ZDOTDIR &&
+#   git submodule update --remote --merge &&
+#   cd $HOME &&
+#   ln -s $ZDOTDIR/.tmux &&
+#   ln -s $ZDOTDIR/.tmux.conf
 
 # Setup pyenv
-! path_exists "$HOME/.pyenv/bin/pyenv" &&
-  echo -n "$fg_bold[blue]Installing pyenv... \033[s" &&
-  (curl -s https://pyenv.run | bash 2> /dev/null) &&
-  echo "\033[u$fg_bold[green]Done!$reset_color" &&
+# ! path_exists "$HOME/.pyenv/bin/pyenv" &&
+#   echo -n "$fg_bold[blue]Installing pyenv... \033[s" &&
+#   (curl -s https://pyenv.run | bash 2> /dev/null) &&
+#   echo "\033[u$fg_bold[green]Done!$reset_color" &&
 
 # Setup rbenvy
 
@@ -87,37 +94,37 @@ bin_exists "rbenv" &&
   eval "$(rbenv init -)"
 
 # Setup g
-! bin_exists "g" &&
-  echo -n "$fg_bold[blue]Installing g... \033[s" &&
-  (curl -sL https://raw.githubusercontent.com/ddlees/g/master/bin/g -o /usr/local/bin/g) &> /dev/null &&
-  chmod a+x /usr/local/bin/g &&
-  echo "\033[u$fg_bold[green]Done!$reset_color"
+# ! bin_exists "g" &&
+#   echo -n "$fg_bold[blue]Installing g... \033[s" &&
+#   (curl -sL https://raw.githubusercontent.com/ddlees/g/master/bin/g -o /usr/local/bin/g) &> /dev/null &&
+#   chmod a+x /usr/local/bin/g &&
+#   echo "\033[u$fg_bold[green]Done!$reset_color"
 
 # Setup golang
-latest_go_version="$(g list-all | tail -n 2 | sed 's/[[:space:]>]//g')"
-[[ $(g list) != *"$latest_go_version"* ]] &&
-  echo -n "$fg_bold[blue]Installing golang v$latest_go_version... \033[s" &&
-  (g install latest) &> /dev/null &&
-  echo "\033[u$fg_bold[green]Done!$reset_color"
+# latest_go_version="$(g list-all | tail -n 2 | sed 's/[[:space:]>]//g')"
+# [[ $(g list) != *"$latest_go_version"* ]] &&
+#   echo -n "$fg_bold[blue]Installing golang v$latest_go_version... \033[s" &&
+#   (g install latest) &> /dev/null &&
+#   echo "\033[u$fg_bold[green]Done!$reset_color"
 
-! bin_exists "bazelisk" &&
-  echo -n "$fg_bold[blue]Installing bazelisk... \033[s" &&
-  (go get github.com/bazelbuild/bazelisk) &> /dev/null &&
-  ln -s
-  echo "\033[u$fg_bold[green]Done!$reset_color"
+# ! bin_exists "bazelisk" &&
+#   echo -n "$fg_bold[blue]Installing bazelisk... \033[s" &&
+#   (go get github.com/bazelbuild/bazelisk) &> /dev/null &&
+#   ln -s
+#   echo "\033[u$fg_bold[green]Done!$reset_color"
 
 # Setup n
-! bin_exists "n" &&
-  echo -n "$fg_bold[blue]Installing n... \033[s" &&
-  (curl -sL https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n) &> /dev/null &&
-  echo "\033[u$fg_bold[green]Done!$reset_color"
+# ! bin_exists "n" &&
+#   echo -n "$fg_bold[blue]Installing n... \033[s" &&
+#   (curl -sL https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n) &> /dev/null &&
+#   echo "\033[u$fg_bold[green]Done!$reset_color"
 
 
 # Install latest Node LTS
-[[ $(n ls) != *"$(n --lts)"* ]] &&
-  echo -n "$fg_bold[blue]Installing NodeJS v$(n --lts)... \033[s" &&
-  (n -q lts &> /dev/null) &&
-  echo "\033[u$fg_bold[green]Done!$reset_color"
+# [[ $(n ls) != *"$(n --lts)"* ]] &&
+#   echo -n "$fg_bold[blue]Installing NodeJS v$(n --lts)... \033[s" &&
+#   (n -q lts &> /dev/null) &&
+#   echo "\033[u$fg_bold[green]Done!$reset_color"
 
 
 
@@ -125,13 +132,13 @@ latest_go_version="$(g list-all | tail -n 2 | sed 's/[[:space:]>]//g')"
 
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
-! path_exists $ZSH &&
-  cd $ZDOTDIR &&
-  git submodule update --remote --merge &&
-  ln -frs plugins/* .oh-my-zsh/custom/plugins/ &&
-  ln -frs themes/* .oh-my-zsh/custom/themes &&
-  cd $HOME &&
-  ln -s $ZDOTDIR/.oh-my-zsh
+# ! path_exists $ZSH &&
+#   cd $ZDOTDIR &&
+#   git submodule update --remote --merge &&
+#   ln -frs plugins/* .oh-my-zsh/custom/plugins/ &&
+#   ln -frs themes/* .oh-my-zsh/custom/themes &&
+#   cd $HOME &&
+#   ln -s $ZDOTDIR/.oh-my-zsh
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -192,36 +199,13 @@ ENABLE_CORRECTION="true"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-  brew
-  cargo
   docker
   emoji
-  emoji-clock
-  encode64
-  gem
   git
-  gradle
-  grunt
-  gulp
-  helm
-  iterm2
   kube-ps1
   kube-ps1-patch
-  kubectl
-  ng
-  node
-  npx
-  pip
   pyenv
-  python
-  redis-cli
-  rust
-  sbt
-  scala
-  vault
   vi-mode
-  vscode
-  xcode
   zsh-autosuggestions
   zsh-completions
   fast-syntax-highlighting
@@ -265,13 +249,12 @@ alias vi="nvim"
 alias ll="ls -al --color=auto"
 
 unalias g
-unalias kaf
 bin_exists "kaf" && source <(kaf completion zsh)
 bin_exists "plz" && source <(plz --completion_script)
-bin_exists "skaffold" && source <(skaffold completion zsh)
+# bin_exists "skaffold" && source <(skaffold completion zsh)
 
 # added by travis gem
-[ -f /Users/ddleesus.ibm.com/.travis/travis.sh ] && source /Users/ddleesus.ibm.com/.travis/travis.sh
+# [ -f /Users/ddleesus.ibm.com/.travis/travis.sh ] && source /Users/ddleesus.ibm.com/.travis/travis.sh
 
 # Set Configuration if it's not been set already.
 [[ -z "$KUBECONFIG" ]] && export KUBECONFIG="$HOME/.kube/config"
@@ -284,6 +267,9 @@ done <<< "$IBM_KUBECONFIGS"
 
 # Fuzzy Finder Configuration
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/fzf/fzf.zsh" ]]; then
+  source "${XDG_CONFIG_HOME:-$HOME/.config}/fzf/fzf.zsh"
+fi
 if type "fzf" > /dev/null; then
   # Use tmux.
   export FZF_TMUX=1
@@ -387,5 +373,5 @@ fi
 
 alias icat="kitty +kitten icat"
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+source /usr/local/opt/modules/init/zsh
+

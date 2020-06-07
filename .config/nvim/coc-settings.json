@@ -1,0 +1,14 @@
+{
+    "$schema": "https://raw.githubusercontent.com/neoclide/coc.nvim/master/data/schema.json",
+    "languageserver": {
+        "please.build": {
+            "command": "plz",
+            "args": ["tool", "lps", "-v", "debug"],
+            "filetypes": ["please.build"]
+        }
+    },
+    "tabnine": {
+        "priority": 50
+    },
+    "java.errors.incompleteClasspath.severity": "ignore"
+}

@@ -90,6 +90,10 @@ export PATH="$HOME/bin:$PATH"
 # ~/.local/bin
 export PATH="$HOME/.local/bin:$PATH"
 
+##
+# zsh variables
+##
+
 # Set ZDOTDIR following all resolved symlinks
 SOURCE="${(%):-%N}"
 while [ -h "$SOURCE" ]; do
@@ -100,3 +104,4 @@ done
 
 export ZDOTDIR="$(cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd)"
 
+export ZSH_CACHE_DIR="$XDG_CACHE_HOME/zsh"

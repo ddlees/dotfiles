@@ -2,20 +2,23 @@
 	path = .oh-my-zsh
 	url = https://github.com/ohmyzsh/ohmyzsh.git
 [submodule "plugins/yarn-completion"]
-	path = plugins/yarn-completion
+	path = .config/zsh/plugins/yarn-completion
 	url = https://github.com/buonomo/yarn-completion
 [submodule "plugins/zsh-completions"]
-	path = plugins/zsh-completions
+	path = .config/zsh/plugins/zsh-completions
 	url = https://github.com/zsh-users/zsh-completions
 [submodule "plugins/zsh-autosuggestions"]
-	path = plugins/zsh-autosuggestions
+	path = .config/zsh/plugins/zsh-autosuggestions
 	url = https://github.com/zsh-users/zsh-autosuggestions
 [submodule "plugins/fast-syntax-highlighting"]
-	path = plugins/fast-syntax-highlighting
+	path = .config/zsh/plugins/fast-syntax-highlighting
 	url = https://github.com/zdharma/fast-syntax-highlighting.git
-[submodule "themes/powerlevel10k"]
-	path = themes/powerlevel10k
-	url = https://github.com/romkatv/powerlevel10k.git
 [submodule ".config/tmux/plugins/tpm"]
 	path = .config/tmux/plugins/tpm
 	url = https://github.com/tmux-plugins/tpm
+[submodule ".config/zsh/themes/powerlevel10k"]
+	path = .config/zsh/themes/powerlevel10k
+	url = https://github.com/romkatv/powerlevel10k.git
+[submodule ".config/zsh/plugins/zinit"]
+	path = .config/zsh/plugins/zinit
+	url = https://github.com/zdharma/zinit.git
