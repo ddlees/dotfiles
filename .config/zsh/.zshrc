@@ -1,15 +1,48 @@
-# Ensure at least zinit submodule has been pulled
-if ! [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/plugins/zinit/zinit.zsh" ]]; then
-  command git -C "$GIT_DOTFILES" submodule update --init --recursive --jobs 8
-fi
-
-# Enable Powerlevel10k instant prompt. Should stay near the top of ~/.zshrc.
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/dev/src/github.com/ddlees/dotfiles/.config/zsh/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+################################################################################
+#                                    Setopts                                   #
+################################################################################
+
+################################################################################
+#                                   Bindkeys                                   #
+################################################################################
+
+################################################################################
+#                                    Modules                                   #
+################################################################################
+
+zmodload -i zsh/complist
+
+################################################################################
+#                                   Autoloads                                  #
+################################################################################
+
+autoload -U colors && colors
+autoload run-help
+
+################################################################################
+#                                    Aliases                                   #
+################################################################################
+
+unalias run-help
+
+################################################################################
+#                                     Zinit                                    #
+################################################################################
+
+# Ensure zinit submodule has been pulled
+if ! [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/plugins/zinit/zinit.zsh" ]]; then
+  command git -C "$GIT_DOTFILES" submodule update --init --recursive --jobs 8
+fi
 
 source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/plugins/zinit/zinit.zsh"
+
 
 zinit wait lucid for \
   atload'_zsh_autosuggest_start' \
@@ -25,11 +58,6 @@ zinit wait lucid for \
 
 zinit atload'!source ${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh' lucid nocd for \
     romkatv/powerlevel10k
-
-autoload -U colors && colors
-
-unalias run-help
-autoload run-help
 
 # Utility functions
 bin_exists() {
@@ -372,8 +400,3 @@ if type "aws" > /dev/null; then
 fi
 
 alias icat="kitty +kitten icat"
-
-# To customize prompt, run `p10k configure` or edit .p10k.zsh.
-if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh" ]]; then
-  source "${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh"
-fi
