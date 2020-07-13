@@ -1,9 +1,51 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/dev/src/github.com/ddlees/dotfiles/.config/zsh/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+################################################################################
+#                                    Zinit                                     #
+################################################################################
+if ! [[ -f "${XDG_CONFIG_HOME}/zsh/plugins/zinit/zinit.zsh" ]]; then
+	command git -C "$GIT_DOTFILES" submodule update --init --recursive --jobs 8
 fi
+
+source "${XDG_CONFIG_HOME}/zsh/plugins/zinit/zinit.zsh"
+
+################################################################################
+#                                Zinit Annexes                                 #
+################################################################################
+
+zinit load zinit-zsh/z-a-bin-gem-node
+
+################################################################################
+#                                  Binaries                                   #
+################################################################################
+
+zplugin lucid pack for \
+	fzf \
+	pyenv \
+	zsh
+
+zinit as'program' for \
+	atclone'./bootstrap && ./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
+	autotools-mirror/automake \
+	id-as'autoconf' extract'!' atclone'./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
+	https://ftp.gnu.org/gnu/autoconf/autoconf-latest.tar.xz \
+	id-as'gettext' extract'!' atclone'./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
+	http://ftp.gnu.org/gnu/gettext/gettext-0.19.7.tar.xz \
+	id-as'texinfo' extract'!' atclone'./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
+	http://ftp.gnu.org/gnu/texinfo/texinfo-6.7.tar.xz \
+	id-as'wget' extract'!' atclone'./configure --prefix=$ZPFX --with-ssl=openssl ' atpull'%atclone' make'install' \
+	https://ftp.gnu.org/gnu/wget/wget-latest.tar.gz \
+	id-as'coreutils' extract'!' atclone'./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
+	https://ftp.gnu.org/gnu/coreutils/coreutils-8.32.tar.xz \
+	id-as'findutils' extract'!' atclone'./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
+	https://ftp.gnu.org/pub/gnu/findutils/findutils-4.7.0.tar.xz \
+	id-as'kubectl' pick'kubectl' atload'!source <(kubectl completion zsh)' \
+	https://storage.googleapis.com/kubernetes-release/release/v1.18.5/bin/darwin/amd64/kubectl
+
+################################################################################
+#                                Instant Prompt                                #
+################################################################################
+
+zinit atload'!source ${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh' lucid nocd for \
+	romkatv/powerlevel10k
 
 ################################################################################
 #                                    Setopts                                   #
@@ -17,7 +59,7 @@ fi
 #                                    Modules                                   #
 ################################################################################
 
-zmodload -i zsh/complist
+# zmodload -i zsh/complist
 
 ################################################################################
 #                                   Autoloads                                  #
@@ -27,80 +69,70 @@ autoload -U colors && colors
 autoload run-help
 
 ################################################################################
+#                                  Zsh Plugins                                 #
+################################################################################
+
+zinit wait pack lucid for \
+	system-completions
+
+zinit wait lucid as'completion' for \
+	blockf atpull'zinit creinstall -q .' \
+	OMZ::plugins/cargo/_cargo \
+	blockf atpull'zinit creinstall -q .' \
+	OMZ::plugins/docker/_docker \
+	blockf atpull'zinit creinstall -q .' \
+	zsh-users/zsh-completions
+
+zinit wait lucid for \
+	atload'_zsh_autosuggest_start' \
+	zsh-users/zsh-autosuggestions \
+	atinit"zicompinit; zicdreplay" \
+	zdharma/fast-syntax-highlighting \
+	atclone"dircolors -b LS_COLORS > clrs.zsh" \
+	atpull'%atclone' pick"clrs.zsh" nocompile'!' \
+	atload'zstyle ":completion:*" list-colors “${(s.:.)LS_COLORS}”' \
+	trapd00r/LS_COLORS \
+	OMZ::plugins/colored-man-pages \
+	svn \
+	OMZ::plugins/emoji \
+	OMZ::plugins/git/git.plugin.zsh \
+	atload'unalias kaf' \
+	OMZ::plugins/kubectl/kubectl.plugin.zsh \
+	OMZ::plugins/vi-mode
+
+################################################################################
 #                                    Aliases                                   #
 ################################################################################
 
 unalias run-help
-
-################################################################################
-#                                     Zinit                                    #
-################################################################################
-
-# Ensure zinit submodule has been pulled
-if ! [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/plugins/zinit/zinit.zsh" ]]; then
-  command git -C "$GIT_DOTFILES" submodule update --init --recursive --jobs 8
-fi
-
-source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/plugins/zinit/zinit.zsh"
-
-
-zinit wait lucid for \
-  atload'_zsh_autosuggest_start' \
-      zsh-users/zsh-autosuggestions \
-  atinit"zicompinit; zicdreplay" \
-      zdharma/fast-syntax-highlighting \
-  blockf atpull'zinit creinstall -q .' \
-      zinit light zsh-users/zsh-completions \
-  atclone"dircolors -b LS_COLORS > clrs.zsh" \
-  atpull'%atclone' pick"clrs.zsh" nocompile'!' \
-  atload'zstyle ":completion:*" list-colors “${(s.:.)LS_COLORS}”' \
-    trapd00r/LS_COLORS
-
-zinit atload'!source ${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh' lucid nocd for \
-    romkatv/powerlevel10k
+alias help=run-help
+alias zshconfig="vim ~/.zshrc"
+alias ohmyzsh="vim ~/.oh-my-zsh"
+alias vim="nvim"
+alias vi="nvim"
+alias ll="ls -al --color=auto"
+alias ls="ls --color=auto"
+alias icat="kitty +kitten icat"
 
 # Utility functions
 bin_exists() {
-  type "$1" > /dev/null
+	type "$1" >/dev/null
 }
 
 path_exists() {
-  [[ -d "$1" || -f "$1" ]]
+	[[ -d "$1" || -f "$1" ]]
 }
 
 # Setup development source paths
 if ! path_exists "$HOME/dev"; then
-  mkdir -p "$HOME/dev/src/github.com"
-  mkdir -p "$HOME/dev/src/github.ibm.com"
+	mkdir -p "$HOME/dev/src/github.com"
+	mkdir -p "$HOME/dev/src/github.ibm.com"
 fi
 
 # Setup nix package manager
 # if ! bin_exists "nix-env"; then
 #   sh <(curl https://nixos.org/nix/install) --no-daemon
 # fi
-
-# source ${ZDOTDIR}/settings/gnu/coreutils.zsh
-# source ${ZDOTDIR}/settings/mac/homebrew.zsh
-# source ${ZDOTDIR}/settings/gnu/tar.zsh
-# source ${ZDOTDIR}/settings/manpath.zsh
-
-# Mac OS setup
-if [[ "$(uname 2> /dev/null)" == "Darwin" ]]; then
-
-  # Setup standard GNU utils
-  OPT="/usr/local/opt"
-  GNU_BIN="/libexec/gnubin"
-  GNU_MAN="/libexec/gnuman"
-
-  FIND_UTILS="$OPT/findutils"
-  # ! path_exists $FIND_UTILS &&
-  #   echo -n "$fg_bold[blue]Installing GNU findutils... \033[s" &&
-  #   (brew install findutils) &> /dev/null &&
-  #   echo "\033[u$fg_bold[green]Done!$reset_color"
-
-  export PATH=$FIND_UTILS$GNU_BIN:$PATH
-fi
-
 
 # Setup tmux
 # TMUX_SRC="$HOME/dev/src/github.com/tmux/tmux"
@@ -116,24 +148,12 @@ fi
 #   cd "$HOME") &> /dev/null &&
 #   echo "\033[u$fg_bold[green]Done!$reset_color"
 
-TMUX_CONF=$HOME/.tmux
 # ! path_exists $TMUX_CONF &&
 #   cd $ZDOTDIR &&
 #   git submodule update --remote --merge &&
 #   cd $HOME &&
 #   ln -s $ZDOTDIR/.tmux &&
 #   ln -s $ZDOTDIR/.tmux.conf
-
-# Setup pyenv
-# ! path_exists "$HOME/.pyenv/bin/pyenv" &&
-#   echo -n "$fg_bold[blue]Installing pyenv... \033[s" &&
-#   (curl -s https://pyenv.run | bash 2> /dev/null) &&
-#   echo "\033[u$fg_bold[green]Done!$reset_color"
-
-# Setup rbenvy
-
-bin_exists "rbenv" &&
-  eval "$(rbenv init -)"
 
 # Setup g
 # ! bin_exists "g" &&
@@ -161,19 +181,16 @@ bin_exists "rbenv" &&
 #   (curl -sL https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n) &> /dev/null &&
 #   echo "\033[u$fg_bold[green]Done!$reset_color"
 
-
 # Install latest Node LTS
 # [[ $(n ls) != *"$(n --lts)"* ]] &&
 #   echo -n "$fg_bold[blue]Installing NodeJS v$(n --lts)... \033[s" &&
 #   (n -q lts &> /dev/null) &&
 #   echo "\033[u$fg_bold[green]Done!$reset_color"
 
-
-
 # If things are not where they should be...
 
 # Path to your oh-my-zsh installation.
-export ZSH=$HOME/.oh-my-zsh
+# export ZSH=$HOME/.oh-my-zsh
 # ! path_exists $ZSH &&
 #   cd $ZDOTDIR &&
 #   git submodule update --remote --merge &&
@@ -189,7 +206,7 @@ export ZSH=$HOME/.oh-my-zsh
 # ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
 
 # Uncomment the following line to use case-sensitive completion.
-CASE_SENSITIVE="true"
+# CASE_SENSITIVE="true"
 
 # Uncomment the following line to use hyphen-insensitive completion.
 # Case-sensitive completion must be off. _ and - will be interchangeable.
@@ -202,7 +219,7 @@ CASE_SENSITIVE="true"
 # DISABLE_UPDATE_PROMPT="true"
 
 # Uncomment the following line to change how often to auto-update (in days).
-export UPDATE_ZSH_DAYS=1
+# export UPDATE_ZSH_DAYS=1
 
 # Uncomment the following line if pasting URLs and other text is messed up.
 # DISABLE_MAGIC_FUNCTIONS=true
@@ -214,7 +231,7 @@ export UPDATE_ZSH_DAYS=1
 # DISABLE_AUTO_TITLE="true"
 
 # Uncomment the following line to enable command auto-correction.
-ENABLE_CORRECTION="true"
+# ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
 # COMPLETION_WAITING_DOTS="true"
@@ -240,21 +257,14 @@ ENABLE_CORRECTION="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(
-  docker
-  emoji
-  git
-  kube-ps1
-  kube-ps1-patch
-  pyenv
-  vi-mode
-)
+# plugins=(
+# )
 
-source $ZSH/oh-my-zsh.sh
+# source $ZSH/oh-my-zsh.sh
 autoload -U compinit && compinit
 
 # User configuration
-ZSH_TMUX_AUTOSTART="true"
+# ZSH_TMUX_AUTOSTART="true"
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
@@ -281,14 +291,7 @@ export ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 # For a full list of active aliases, run `alias`.
 #
 # Aliases
-alias zshconfig="vim ~/.zshrc"
-alias ohmyzsh="vim ~/.oh-my-zsh"
-alias vim="nvim"
-alias vi="nvim"
-alias ll="ls -al --color=auto"
-alias ls="ls --color=auto"
 
-unalias g
 bin_exists "kaf" && source <(kaf completion zsh)
 bin_exists "plz" && source <(plz --completion_script)
 # bin_exists "skaffold" && source <(skaffold completion zsh)
@@ -296,107 +299,103 @@ bin_exists "plz" && source <(plz --completion_script)
 # added by travis gem
 # [ -f /Users/ddleesus.ibm.com/.travis/travis.sh ] && source /Users/ddleesus.ibm.com/.travis/travis.sh
 
-
 # Fuzzy Finder Configuration
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/fzf/fzf.zsh" ]]; then
-  source "${XDG_CONFIG_HOME:-$HOME/.config}/fzf/fzf.zsh"
+if [[ -r "${XDG_CONFIG_HOME}/fzf/fzf.zsh" ]]; then
+	source "${XDG_CONFIG_HOME}/fzf/fzf.zsh"
 fi
-if type "fzf" > /dev/null; then
-  # Use tmux.
-  export FZF_TMUX=1
-  # Default to The Silver Searcher.
-  if type "ag" > /dev/null; then
-    export FZF_DEFAULT_COMMAND='ag --color --color-path "00;22" --filename-pattern ""'
-    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-    export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND"
-  elif type "rg" > /dev/null; then
-    export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --glob "!.git/*" --glob "!.cache/*" --glob "!node_modules/*"'
-    # export FZF_DEFAULT_COMMAND='rg --no-ignore --hidden --glob "!.git/*" --glob "!.cache/*" --glob "!node_modules/*"'
-    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-    export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND"
-  fi
-  # Setup default options.
-  function fzf_default_options () {
-    # Bat options
-    bat_options=('--color always'
-                 '--italic-text always'
-                 '--style numbers,header,changes,grid'
-                 '--paging never'
-                 '--line-range :$LINES'
-                 '--theme \"One Dark\"'
-    )
-    # Fzf preview options.
-    fzf_preview_options=('"[[ $(file --mime {}) =~ binary ]]'
-                         '&& echo {} is a binary file'
-                         "|| (bat {} $bat_options || cat {})"
-                         '2> /dev/null"'
-    )
-    # Fzf color options - 'one' theme.
-    fzf_color_options=('--color dark'
-                       '--color fg:-1'
-                       '--color bg:-1'
-                       '--color hl:#c678dd'
-                       '--color fg+:#ffffff'
-                       '--color bg+:-1'
-                       '--color hl+:#d858fe'
-                       '--color info:#98c379'
-                       '--color border:#282c34'
-                       # '--color border:-1'
-                       '--color prompt:#61afef'
-                       '--color pointer:#be5046'
-                       '--color marker:#e5c07b'
-                       '--color spinner:#61afef'
-                       '--color header:#61afef'
-    )
-    # Vim keybinding.
-    # Couldn't get this working.
-    fzf_vim_bindings=('"ctrl-v:execute(vim {} < /dev/tty)"')
-    # Fzf options
-    fzf_options=(
-      '--reverse'
-      # '--inline-info'
-      '--ansi'
-      '--preview-window right:0%'
-      "--preview $fzf_preview_options"
-      # "--bind $fzf_vim_bindings"
-      "$fzf_color_options"
-    )
-    echo -n "$fzf_options"
-  }
-  export FZF_DEFAULT_OPTS=$(fzf_default_options)
-  export FZF_CTRL_T_OPTS='--preview-window right:70%'
-  export FZF_CTRL_R_OPTS='--preview-window right:0%'
+if type "fzf" >/dev/null; then
+	# Use tmux.
+	export FZF_TMUX=1
+	# Default to The Silver Searcher.
+	if type "ag" >/dev/null; then
+		export FZF_DEFAULT_COMMAND='ag --color --color-path "00;22" --filename-pattern ""'
+		export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+		export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND"
+	elif type "rg" >/dev/null; then
+		export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --glob "!.git/*" --glob "!.cache/*" --glob "!node_modules/*"'
+		# export FZF_DEFAULT_COMMAND='rg --no-ignore --hidden --glob "!.git/*" --glob "!.cache/*" --glob "!node_modules/*"'
+		export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+		export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND"
+	fi
+	# Setup default options.
+	function fzf_default_options() {
+		# Bat options
+		bat_options=('--color always'
+			'--italic-text always'
+			'--style numbers,header,changes,grid'
+			'--paging never'
+			'--line-range :$LINES'
+			'--theme \"One Dark\"'
+		)
+		# Fzf preview options.
+		fzf_preview_options=('"[[ $(file --mime {}) =~ binary ]]'
+			'&& echo {} is a binary file'
+			"|| (bat {} $bat_options || cat {})"
+			'2> /dev/null"'
+		)
+		# Fzf color options - 'one' theme.
+		fzf_color_options=('--color dark'
+			'--color fg:-1'
+			'--color bg:-1'
+			'--color hl:#c678dd'
+			'--color fg+:#ffffff'
+			'--color bg+:-1'
+			'--color hl+:#d858fe'
+			'--color info:#98c379'
+			'--color border:#282c34'
+			# '--color border:-1'
+			'--color prompt:#61afef'
+			'--color pointer:#be5046'
+			'--color marker:#e5c07b'
+			'--color spinner:#61afef'
+			'--color header:#61afef'
+		)
+		# Vim keybinding.
+		# Couldn't get this working.
+		fzf_vim_bindings=('"ctrl-v:execute(vim {} < /dev/tty)"')
+		# Fzf options
+		fzf_options=(
+			'--reverse'
+			# '--inline-info'
+			'--ansi'
+			'--preview-window right:0%'
+			"--preview $fzf_preview_options"
+			# "--bind $fzf_vim_bindings"
+			"$fzf_color_options"
+		)
+		echo -n "$fzf_options"
+	}
+	export FZF_DEFAULT_OPTS=$(fzf_default_options)
+	export FZF_CTRL_T_OPTS='--preview-window right:70%'
+	export FZF_CTRL_R_OPTS='--preview-window right:0%'
 fi
 
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
-  . /Users/ddleesus.ibm.com/.nix-profile/etc/profile.d/nix.sh;
+	. /Users/ddleesus.ibm.com/.nix-profile/etc/profile.d/nix.sh
 fi
 
-##
-# AWS CLI Configuration
-##
-if type "aws" > /dev/null; then
-  function _aws () {
-    local options="${@}"
-    local aws_options=()
-    # If `CLOUD_OBJECT_STORAGE_ENDPOINT` is defined then use it as the S3
-    # endpoint.
-    [ ! -z "${CLOUD_OBJECT_STORAGE_ENDPOINT}" ] \
-      && aws_options+=( '--endpoint-url' "${CLOUD_OBJECT_STORAGE_ENDPOINT}")
-    # Replace `cos://` with `s3://`.
-    local search='cos://'
-    local replace='s3://'
-    options="${options/"${search}"/"${replace}"}"
-    # Remove `us-south/` if it's present.
-    local search='://us-south/'
-    local replace='://'
-    options="${options/"${search}"/"${replace}"}"
-    aws_options+=( "${options}" )
-    aws ${=aws_options}
-  }
-  alias aws="_aws"
-  alias s3="aws s3"
-fi
-
-alias icat="kitty +kitten icat"
+###
+## AWS CLI Configuration
+###
+#if type "aws" > /dev/null; then
+#  function _aws() {
+#    local options="${@}"
+#    local aws_options=()
+#    # If `CLOUD_OBJECT_STORAGE_ENDPOINT` is defined then use it as the S3
+#    # endpoint.
+#    [ ! -z "${CLOUD_OBJECT_STORAGE_ENDPOINT}" ] &&
+#      aws_options+=('--endpoint-url' "${CLOUD_OBJECT_STORAGE_ENDPOINT}")
+#    # Replace `cos://` with `s3://`.
+#    local search='cos://'
+#    local replace='s3://'
+#    options="${options/"${search}"/"${replace}"}"
+#    # Remove `us-south/` if it's present.
+#    local search='://us-south/'
+#    local replace='://'
+#    options="${options/"${search}"/"${replace}"}"
+#    aws_options+=("${options}")
+#    aws ${aws_options}
+#  }
+#  alias aws="_aws"
+#  alias s3="aws s3"
+#fi

@@ -109,7 +109,7 @@ export ZSH_CACHE_DIR="$XDG_CACHE_HOME/zsh"
 ################################################################################
 export GIT_DOTFILES="$(dirname $(dirname "$ZDOTDIR"))"
 
-# Set Configuration if it's not been set already.
+# Ensure default kubernetes config is set
 [[ -z "$KUBECONFIG" ]] && export KUBECONFIG="$HOME/.kube/config"
 
 # Add each IBM Cloud k8s configuration to KUBECONFIG
@@ -117,3 +117,6 @@ IBM_KUBECONFIGS=$(find "$HOME/.bluemix/plugins/container-service/clusters" -name
 while read -r IBM_KUBECONFIG; do
   [[ ":$KUBECONFIG:" != *":$IBM_KUBECONFIG:"* ]] && export KUBECONFIG="$KUBECONFIG:$IBM_KUBECONFIG"
 done <<< "$IBM_KUBECONFIGS"
+
+export TMUX_CONF="$XDG_CONFIG_HOME/tmux"
+
