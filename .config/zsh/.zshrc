@@ -17,28 +17,65 @@ zinit load zinit-zsh/z-a-bin-gem-node
 #                                  Binaries                                   #
 ################################################################################
 
-zplugin lucid pack for \
-	fzf \
-	pyenv \
-	zsh
+# Order of execution of related Ice-mods:
+# atinit -> atpull! -> make'!!' -> mv -> cp -> make! -> atclone/atpull -> make ->
+# (plugin script loading) ->
+# src -> multisrc -> atload
 
-zinit as'program' for \
-	atclone'./bootstrap && ./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
-	autotools-mirror/automake \
-	id-as'autoconf' extract'!' atclone'./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
-	https://ftp.gnu.org/gnu/autoconf/autoconf-latest.tar.xz \
-	id-as'gettext' extract'!' atclone'./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
-	http://ftp.gnu.org/gnu/gettext/gettext-0.19.7.tar.xz \
-	id-as'texinfo' extract'!' atclone'./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
-	http://ftp.gnu.org/gnu/texinfo/texinfo-6.7.tar.xz \
-	id-as'wget' extract'!' atclone'./configure --prefix=$ZPFX --with-ssl=openssl ' atpull'%atclone' make'install' \
-	https://ftp.gnu.org/gnu/wget/wget-latest.tar.gz \
-	id-as'coreutils' extract'!' atclone'./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
-	https://ftp.gnu.org/gnu/coreutils/coreutils-8.32.tar.xz \
-	id-as'findutils' extract'!' atclone'./configure --prefix=$ZPFX' atpull'%atclone' make'install' \
-	https://ftp.gnu.org/pub/gnu/findutils/findutils-4.7.0.tar.xz \
-	id-as'kubectl' pick'kubectl' atload'!source <(kubectl completion zsh)' \
+export MAKEFLAGS=""
+
+zinit id-as'perl' as'program' atpull'%atclone' make'install' \
+	atclone"ziextract --auto --move && ./Configure -des -Dprefix=${ZPFX}/perl/5.32.0 -Dprivlib=${ZPFX}/perl/5.32.0/perl5/5.32.0 -Dsitelib=${ZPFX}/perl/5.32.0/perl5/site_perl/5.32.0 -Dotherlibdirs=/usr/local/lib/perl5/site_perl/5.32.0 -Duseshrplib -Duselargefiles -Dusethreads -Dsed=/usr/bin/sed" \
+	for https://www.cpan.org/src/5.0/perl-5.32.0.tar.xz
+
+# zinit id-as'openssl' as'program' atpull'%atclone' make'depend install' \
+# 	atclone"
+#   ziextract --auto --move && \
+#     perl ./Configure --prefix=$ZPFX --openssldir=$ZPFX \
+#     shared darwin64-x86_64-cc no-ssl3 no-ssl3-method no-zlib enable-ec_nistp_64_gcc_128 no-ssl2 no-ssl3 no-comp '-Wl,-rpath,$(LIBRPATH)'" \
+# 	for https://www.openssl.org/source/openssl-1.1.1g.tar.gz
+
+gnu_programs=(
+	id-as'autoconf' https://ftp.gnu.org/gnu/autoconf/autoconf-latest.tar.xz
+	id-as'automake' https://ftp.gnu.org/gnu/automake/automake-1.16.2.tar.xz
+	id-as'binutils' https://ftp.gnu.org/gnu/binutils/binutils-2.35.tar.xz
+	id-as'coreutils' https://ftp.gnu.org/gnu/coreutils/coreutils-8.32.tar.xz
+	id-as'libtool' https://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz
+	id-as'gmp' atclone'ziextract --auto --move && ./configure --enable-static --prefix=$ZPFX'
+	https://ftp.gnu.org/gnu/gmp/gmp-6.2.0.tar.xz
+	id-as'mpfr' atclone'ziextract --auto --move && ./configure --enable-static --prefix=$ZPFX --with-gmp=$ZPFX'
+	https://ftp.gnu.org/gnu/mpfr/mpfr-4.1.0.tar.xz
+	id-as'mpc' atclone'ziextract --auto --move && ./configure --enable-static --prefix=$ZPFX --with-gmp=$ZPFX --with-mpfr=$ZPFX'
+	https://ftp.gnu.org/gnu/mpc/mpc-1.1.0.tar.gz
+	# id-as'elfutils' atclone'ziextract --auto --move && ./configure --prefix=$ZPFX'
+	# https://sourceware.org/elfutils/ftp/elfutils-latest.tar.bz2
+	id-as'make' https://ftp.gnu.org/gnu/make/make-4.3.tar.gz
+	id-as'gcc' atclone'ziextract --auto \
+    && "${PWD}/gcc-10.2.0/configure" --prefix=$ZPFX \
+    --with-gmp=$ZPFX \
+    --with-mpfr=$ZPFX \
+    --with-mpc=$ZPFX \
+    --with-fpmath=sse \
+    --enable-languages=all' make'-j install'
+	https://ftp.gnu.org/gnu/gcc/gcc-10.2.0/gcc-10.2.0.tar.xz
+	id-as'diffutils' atclone'ziextract --auto --move && ./configure --prefix=$ZPFX --disable-dependency-tracking'
+	https://ftp.gnu.org/gnu/diffutils/diffutils-3.7.tar.xz
+	id-as'gettext' https://ftp.gnu.org/gnu/gettext/gettext-0.19.7.tar.xz
+	id-as'texinfo' https://ftp.gnu.org/gnu/texinfo/texinfo-6.7.tar.xz
+	id-as'parallel' https://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2
+	id-as'findutils' https://ftp.gnu.org/pub/gnu/findutils/findutils-4.7.0.tar.xz
+	# id-as'wget' atclone'ziextract --auto --move && ./configure --prefix=$ZPFX --with-ssl=openssl --with-libssl-prefix=/usr/local/Cellar/openssl@1.1/1.1.1g gl_cv_func_ftello_works=yes --disable-debug --disable-pcre --disable-pcre2 --without-libpsl'
+	https://ftp.gnu.org/gnu/wget/wget-latest.tar.gz
+)
+zinit as'program' atclone'ziextract --auto --move && ./configure --prefix=$ZPFX' \
+	atpull'%atclone' make'install' for "${gnu_programs[@]}"
+
+zinit id-as'kubectl' as'program' pick'kubectl' atclone'kubectl completion zsh > _kubectl' atpull'%atclone' for \
 	https://storage.googleapis.com/kubernetes-release/release/v1.18.5/bin/darwin/amd64/kubectl
+
+zinit id-as'fzf' as'program' pick='$ZPFX/bin/(fzf|fzf-tmux)' atclone'$XDG_CONFIG_HOME/fzf/setup.zsh' \
+	make='PREFIX=$ZPFX install' atpull'%atclone' multisrc'shell/key-bindings.zsh $XDG_CONFIG_HOME/fzf/fzf.zsh' for \
+	junegunn/fzf
 
 ################################################################################
 #                                Instant Prompt                                #
@@ -50,6 +87,13 @@ zinit atload'!source ${XDG_CONFIG_HOME:-$HOME/.config}/p10k/.p10k.zsh' lucid noc
 ################################################################################
 #                                    Setopts                                   #
 ################################################################################
+
+setopt extended_history       # record timestamp of command in HISTFILE
+setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE
+setopt hist_ignore_dups       # ignore duplicated commands history list
+setopt hist_ignore_space      # ignore commands that start with space
+setopt hist_verify            # show command with history expansion to user before running it
+setopt share_history          # share command history data
 
 ################################################################################
 #                                   Bindkeys                                   #
@@ -72,33 +116,39 @@ autoload run-help
 #                                  Zsh Plugins                                 #
 ################################################################################
 
-zinit wait pack lucid for \
+packages=(
+	pyenv
+	zsh
 	system-completions
+)
+zplugin wait lucid pack for "${packages[@]}"
 
-zinit wait lucid as'completion' for \
-	blockf atpull'zinit creinstall -q .' \
-	OMZ::plugins/cargo/_cargo \
-	blockf atpull'zinit creinstall -q .' \
-	OMZ::plugins/docker/_docker \
-	blockf atpull'zinit creinstall -q .' \
+completions=(
+	OMZ::plugins/cargo/_cargo
+	OMZ::plugins/docker/_docker
 	zsh-users/zsh-completions
+)
+zinit wait blockf lucid atpull'zinit creinstall -q .' as'completion' for "${completions[@]}"
 
-zinit wait lucid for \
-	atload'_zsh_autosuggest_start' \
-	zsh-users/zsh-autosuggestions \
-	atinit"zicompinit; zicdreplay" \
-	zdharma/fast-syntax-highlighting \
-	atclone"dircolors -b LS_COLORS > clrs.zsh" \
-	atpull'%atclone' pick"clrs.zsh" nocompile'!' \
-	atload'zstyle ":completion:*" list-colors “${(s.:.)LS_COLORS}”' \
-	trapd00r/LS_COLORS \
-	OMZ::plugins/colored-man-pages \
-	svn \
-	OMZ::plugins/emoji \
-	OMZ::plugins/git/git.plugin.zsh \
-	atload'unalias kaf' \
-	OMZ::plugins/kubectl/kubectl.plugin.zsh \
+plugins=(
+	atinit"zicompinit; zicdreplay"
+	zdharma/fast-syntax-highlighting
+	atclone"dircolors -b LS_COLORS > clrs.zsh"
+	atpull'%atclone' pick"clrs.zsh" nocompile'!'
+	atload'zstyle ":completion:*" list-colors “${(s.:.)LS_COLORS}”'
+	trapd00r/LS_COLORS
+	OMZ::plugins/colored-man-pages
+	svn
+	OMZ::plugins/emoji
+	OMZ::plugins/git/git.plugin.zsh
+	atload'unalias kaf'
+	OMZ::plugins/kubectl/kubectl.plugin.zsh
+	atload'bindkey "^R" fzf-history-widget'
 	OMZ::plugins/vi-mode
+	atload'!_zsh_autosuggest_start && source $XDG_CONFIG_HOME/zsh-autosuggestions/setup.zsh'
+	zsh-users/zsh-autosuggestions
+)
+zinit wait lucid for "${plugins[@]}"
 
 ################################################################################
 #                                    Aliases                                   #
@@ -268,20 +318,6 @@ autoload -U compinit && compinit
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
-###
-# Zsh Autosuggestions
-#
-# https://github.com/zsh-users/zsh-autosuggestions
-###
-export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=8,bold"
-export ZSH_AUTOSUGGEST_USE_ASYNC='true'
-# Ctrl + f: Accepts a word.
-bindkey '^f' forward-word
-# Ctrl + SPACE: Accepts the full suggestion.
-bindkey '^ ' autosuggest-accept
-export ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-# export ZSH_AUTOSUGGEST_STRATEGY=(match_prev_cmd completion)
-
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
 
@@ -298,77 +334,6 @@ bin_exists "plz" && source <(plz --completion_script)
 
 # added by travis gem
 # [ -f /Users/ddleesus.ibm.com/.travis/travis.sh ] && source /Users/ddleesus.ibm.com/.travis/travis.sh
-
-# Fuzzy Finder Configuration
-if [[ -r "${XDG_CONFIG_HOME}/fzf/fzf.zsh" ]]; then
-	source "${XDG_CONFIG_HOME}/fzf/fzf.zsh"
-fi
-if type "fzf" >/dev/null; then
-	# Use tmux.
-	export FZF_TMUX=1
-	# Default to The Silver Searcher.
-	if type "ag" >/dev/null; then
-		export FZF_DEFAULT_COMMAND='ag --color --color-path "00;22" --filename-pattern ""'
-		export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-		export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND"
-	elif type "rg" >/dev/null; then
-		export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --glob "!.git/*" --glob "!.cache/*" --glob "!node_modules/*"'
-		# export FZF_DEFAULT_COMMAND='rg --no-ignore --hidden --glob "!.git/*" --glob "!.cache/*" --glob "!node_modules/*"'
-		export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-		export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND"
-	fi
-	# Setup default options.
-	function fzf_default_options() {
-		# Bat options
-		bat_options=('--color always'
-			'--italic-text always'
-			'--style numbers,header,changes,grid'
-			'--paging never'
-			'--line-range :$LINES'
-			'--theme \"One Dark\"'
-		)
-		# Fzf preview options.
-		fzf_preview_options=('"[[ $(file --mime {}) =~ binary ]]'
-			'&& echo {} is a binary file'
-			"|| (bat {} $bat_options || cat {})"
-			'2> /dev/null"'
-		)
-		# Fzf color options - 'one' theme.
-		fzf_color_options=('--color dark'
-			'--color fg:-1'
-			'--color bg:-1'
-			'--color hl:#c678dd'
-			'--color fg+:#ffffff'
-			'--color bg+:-1'
-			'--color hl+:#d858fe'
-			'--color info:#98c379'
-			'--color border:#282c34'
-			# '--color border:-1'
-			'--color prompt:#61afef'
-			'--color pointer:#be5046'
-			'--color marker:#e5c07b'
-			'--color spinner:#61afef'
-			'--color header:#61afef'
-		)
-		# Vim keybinding.
-		# Couldn't get this working.
-		fzf_vim_bindings=('"ctrl-v:execute(vim {} < /dev/tty)"')
-		# Fzf options
-		fzf_options=(
-			'--reverse'
-			# '--inline-info'
-			'--ansi'
-			'--preview-window right:0%'
-			"--preview $fzf_preview_options"
-			# "--bind $fzf_vim_bindings"
-			"$fzf_color_options"
-		)
-		echo -n "$fzf_options"
-	}
-	export FZF_DEFAULT_OPTS=$(fzf_default_options)
-	export FZF_CTRL_T_OPTS='--preview-window right:70%'
-	export FZF_CTRL_R_OPTS='--preview-window right:0%'
-fi
 
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
 	. /Users/ddleesus.ibm.com/.nix-profile/etc/profile.d/nix.sh

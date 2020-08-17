@@ -104,6 +104,11 @@ export ZDOTDIR="$(cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd)"
 
 export ZSH_CACHE_DIR="$XDG_CACHE_HOME/zsh"
 
+## History command configuration
+export HISTFILE="$XDG_DATA_HOME/zsh/.zsh_history"
+export HISTSIZE=50000
+export SAVEHIST=10000
+
 ################################################################################
 #                                misc. variables                               #
 ################################################################################
@@ -119,4 +124,11 @@ while read -r IBM_KUBECONFIG; do
 done <<< "$IBM_KUBECONFIGS"
 
 export TMUX_CONF="$XDG_CONFIG_HOME/tmux"
+
+# zinit prefix
+export ZPFX="${HOME}/.zinit/polaris"
+
+export DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$ZPFX/lib"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ZPFX/lib"
+export LIBRPATH="$ZPFX"
 
