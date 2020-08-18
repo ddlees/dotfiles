@@ -15,4 +15,5 @@
 !.config/zsh
 .config/zsh/.zinit
 
+!.config/zsh-autosuggestions
 .DS_Store
