@@ -1,14 +1,44 @@
 {
-    "$schema": "https://raw.githubusercontent.com/neoclide/coc.nvim/master/data/schema.json",
-    "languageserver": {
-        "please.build": {
-            "command": "plz",
-            "args": ["tool", "lps", "-v", "debug"],
-            "filetypes": ["please.build"]
-        }
-    },
-    "tabnine": {
-        "priority": 50
-    },
-    "java.errors.incompleteClasspath.severity": "ignore"
+  "codeLens.enable": true,
+  "diagnostic.checkCurrentLine": true,
+  "diagnostic.errorSign": "✘",
+  "diagnostic.hintSign": "⚑",
+  "diagnostic.infoSign": "ℹ",
+  "diagnostic.refreshOnInsertMode": true,
+  "diagnostic.virtualText": true,
+  "inlayHint.refreshOnInsertMode": true,
+  "links.tooltip": true,
+  "list.indicator": "▶",
+  "list.selectedSignText": "◆",
+  "suggest.noselect": true,
+  "suggest.virtualText": true,
+  "languageserver": {
+    "please.build": {
+      "command": "plz",
+      "args": [
+        "tool",
+        "lps",
+        "-v",
+        "debug"
+      ],
+      "filetypes": [
+        "please.build"
+      ]
+    }
+  },
+  "coc-bazel.enabled": false,
+  "tabnine.priority": -1,
+  "java.errors.incompleteClasspath.severity": "ignore",
+  "omnisharp.path": "/usr/local/bin/omnisharp",
+  "go.goplsOptions": {
+    "buildFlags": [
+      "-tags=integration,serial_integration"
+    ],
+    "env": {
+      /* "GOOS": "windows" */
+    }
+  },
+  "sumneko-lua.enableNvimLuaDev": true,
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+  "Lua.telemetry.enable": false
 }

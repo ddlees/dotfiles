@@ -1,0 +1,8 @@
+#autoload
+
+builtin emulate -L zsh -o EXTENDED_GLOB
+
+private long=
+long=$(ls -ld $1) && print ${long%% *}
+
+# vim: set filetype=zsh

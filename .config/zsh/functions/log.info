@@ -1,0 +1,7 @@
+#autoload
+
+builtin emulate -L zsh -o EXTENDED_GLOB
+
+zsh.is_interactive && print -P "%F{green2}[info]%f: %F{blue}${@}%f"
+
+# vim: set filetype=zsh

@@ -1,0 +1,7 @@
+#autoload
+
+builtin emulate -L zsh -o EXTENDED_GLOB
+
+zsh.is_interactive && print -P "%F{red1}[error]%f: %F{magenta2}${@}%f"
+
+# vim: set filetype=zsh

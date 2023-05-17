@@ -1,0 +1,7 @@
+#autoload
+
+builtin emulate -L zsh -o EXTENDED_GLOB
+
+[[ -e $1 ]]
+
+# vim: set filetype=zsh

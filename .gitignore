@@ -1,19 +1,22 @@
-.zcompdump*
 *.log
+.DS_Store
 
-# .config folder
+# Ignore everying in .config folder by default
 .config/*
-!.config/bash
-!.config/fzf
+!.config/btop
 !.config/git
 !.config/kitty
 !.config/nvim
+!.config/neofetch
 !.config/p10k
-!.config/tmux/plugins/tpm
-!.config/tmux/tmux.conf
-!.config/vim/.vimrc
 !.config/zsh
-.config/zsh/.zinit
 
-!.config/zsh-autosuggestions
-.DS_Store
+# zsh
+*.zwc
+*.zwc.old
+.zcalc_history
+.zcompcache
+.zcompdump*
+.zsh_history
+.zsh_sessions
+

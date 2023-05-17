@@ -1,0 +1,10 @@
+vim.o.backup = false
+vim.o.writebackup = false
+vim.o.updatetime = 300
+vim.o.signcolumn = 'yes'
+vim.o.mouse = 'a'
+vim.o.termguicolors = true
+vim.o.clipboard = 'unnamedplus'
+vim.o.cmdheight = 0
+vim.o.shortmess = vim.o.shortmess..'c'
+vim.wo.number = true
